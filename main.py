@@ -3,13 +3,9 @@ import itertools
 import numpy
 
 # DEBUG INPUT
-input = "var i : [1]" + "\n"
-input += "var j : [3,4]" + "\n"
+input = "var i : [1,2]" + "\n"
 input += "begin" + "\n"
-input += "i == 1 and j == 3, i == 1 and j == 3, 0.5" + "\n"
-input += "i == 1 and j == 3, i == 1 and j == 4, 0.5" + "\n"
-input += "i == 1 and j == 4, i == 1 and j == 3, 0.667" + "\n"
-input += "i == 1 and j == 4, i == 1 and j == 4, 0.333" + "\n"
+input += "i == 1, i == ~i + 1, 0.5" + "\n"
 input += "end"
 
 # Parse Body
@@ -20,12 +16,18 @@ def parse_body(line):
     triple = [(splitted[0].strip(), splitted[1].strip(), splitted[2].strip())]
     return triple
 
-def evaluate_predicate(predicate, standard_variables, values):
+def evaluate_predicate(predicate, standard_variables, values, leave_values = None):
     var_dict = {}
+    var_dict_leave = {}
     index = 0
     for var in standard_variables:
+        if leave_values != None:
+            var_dict_leave["~"+var[0]] = leave_values[index]
         var_dict[var[0]] = values[index]
         index += 1
+
+    for (key, value) in var_dict_leave.items():
+        predicate = predicate.replace(str(key), str(value))
 
     for (key, value) in var_dict.items():
         predicate = predicate.replace(str(key), str(value))
@@ -63,7 +65,7 @@ def run(variables, triples):
                 for arrive in combined:
                     ordered_arrive_vars = list(arrive)
                     # check the arrive predicate
-                    if evaluate_predicate(q, variables, ordered_arrive_vars):
+                    if evaluate_predicate(q, variables, ordered_arrive_vars, ordered_vars):
                         # calculate row and column of the matrix
                         row = 0
                         index = 0
