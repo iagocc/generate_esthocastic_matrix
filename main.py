@@ -1,12 +1,19 @@
 import re
 import itertools
 import numpy
+import math
 
 # DEBUG INPUT
-input = "var i : [1,2]" + "\n"
-input += "begin" + "\n"
-input += "i == 1, i == ~i + 1, 0.5" + "\n"
-input += "end"
+input = """
+var i:[1,2,3,4,5]
+begin
+	i==1 or i==5,(i==1 or i==5)and i==~i,0.5
+	i==1,i==2,0.5
+	i==5,i==4,0.5
+	i>=2 and i<=4,i==~i+1,0.5
+	i>=2 and i<=4,i==~i-1,0.5
+end
+"""
 
 # Parse Body
 def parse_body(line):
@@ -116,5 +123,18 @@ for line in input_lines:
 
         continue
 
+# Run the algorithm
 matrix = run(vars, triples)
-print matrix
+
+# check warnings
+
+# check if not stochastic matrix
+sums = map(sum, matrix)
+warns = map(lambda (i,x): "Matrix nao estocastica: linha " + str(i) if x > 1 or x < 1 else None, list(enumerate(sums)))
+warns = filter(None, warns)
+if len(warns) > 0: print '\nWarnings:'
+if len(warns) > 0: print '\n'.join(warns)
+
+print "\nResultado:"
+# Print in octave stardard
+print '\n'.join(' '.join(str(cell) for cell in row) for row in matrix)
