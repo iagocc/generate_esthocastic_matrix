@@ -5,15 +5,30 @@ import math
 
 # DEBUG INPUT
 input = """
-var i:[1,2,3,4,5]
-begin
-	i==1 or i==5,(i==1 or i==5)and i==~i,0.5
-	i==1,i==2,0.5
-	i==5,i==4,0.5
-	i>=2 and i<=4,i==~i+1,0.5
-	i>=2 and i<=4,i==~i-1,0.5
-end
+// Declaracao de variavel
+var i:[1,2,3,4,5] // estados
+
+i==1 or i==5,(i==1 or i==5)and i==~i,0.5
+i==1,i==2,0.5
+i==5,i==4,0.5
+i>=2 and i<=4,i==~i+1,0.5
+i>=2 and i<=4,i==~i-1,0.5
 """
+
+# Remove comments
+def remove_comments(string):
+    pattern = r"(\".*?\"|\'.*?\')|(/\*.*?\*/|//[^\r\n]*$)"
+    # first group captures quoted strings (double or single)
+    # second group captures comments (//single-line or /* multi-line */)
+    regex = re.compile(pattern, re.MULTILINE|re.DOTALL)
+    def _replacer(match):
+        # if the 2nd group (capturing comments) is not None,
+        # it means we have captured a non-quoted (real) comment string.
+        if match.group(2) is not None:
+            return "" # so we will return empty to remove the comment
+        else: # otherwise, we will return the 1st group
+            return match.group(1) # captured quoted-string
+    return regex.sub(_replacer, string)
 
 # Parse Body
 def parse_body(line):
@@ -92,11 +107,20 @@ def run(variables, triples):
 input_lines = input.split("\n")
 vars = []
 triples = []
-has_begin = False
+initialized = False
+has_begin_body = False
+done = False
 
+line_number = 0
 for line in input_lines:
+    line_number+= 1
+
+    # remove comments
+    line = remove_comments(line)
+
     #  variable definition
     if line[:3] == "var":
+        initialized = True
         # remove "var"
         line = re.sub(r"var\s*", "", line)
         # remove everything else var name
@@ -105,29 +129,28 @@ for line in input_lines:
         var_range = re.sub(r"\w+\s*:\s*", "", line).strip()
         # include tuple in array
         vars.append((var_name, var_range))
-
         continue
 
-    if line[:5] == "begin":
-        has_begin = True
-
+    if line == "" and initialized and not has_begin_body and not done:
+        has_begin_body = True
         continue
 
-    if line[:5] == "end":
-        has_begin = False
+    if line == "" and initialized and has_begin_body and not done:
+        done = True
+        continue
 
+    if line == "" and done:
+        print "Erro de sintaxe na linha: " + str(line_number)
         break
 
-    if has_begin:
+    if has_begin_body:
         triples += parse_body(line)
-
         continue
 
 # Run the algorithm
 matrix = run(vars, triples)
 
 # check warnings
-
 # check if not stochastic matrix
 sums = map(sum, matrix)
 warns = map(lambda (i,x): "Matrix nao estocastica: linha " + str(i) if x > 1 or x < 1 else None, list(enumerate(sums)))
