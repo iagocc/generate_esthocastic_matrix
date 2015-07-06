@@ -2,17 +2,18 @@ import re
 import itertools
 import numpy
 import math
+from fractions import Fraction
 
 # DEBUG INPUT
 input = """
 // Declaracao de variavel
 var i:[1,2,3,4,5] // estados
 
-i==1 or i==5,(i==1 or i==5)and i==~i,0.5
-i==1,i==2,0.5
-i==5,i==4,0.5
-i>=2 and i<=4,i==~i+1,0.5
-i>=2 and i<=4,i==~i-1,0.5
+i==1 or i==5,(i==1 or i==5) and i==~i, 1/2
+i==1,i==2, 1/2
+i==5,i==4, 1/2
+i>=2 and i<=4,i==~i+1, 1/2
+i>=2 and i<=4,i==~i-1, 0.5
 """
 
 # Remove comments
@@ -35,7 +36,10 @@ def parse_body(line):
     triple = []
     # include triple expression in array
     splitted = line.split(',')
-    triple = [(splitted[0].strip(), splitted[1].strip(), splitted[2].strip())]
+    # parser the fraction
+    prob = str(float(Fraction(splitted[2].strip())))
+
+    triple = [(splitted[0].strip(), splitted[1].strip(), prob)]
     return triple
 
 def evaluate_predicate(predicate, standard_variables, values, leave_values = None):
