@@ -2,6 +2,7 @@ import re
 import itertools
 import numpy
 import math
+import sys
 from fractions import Fraction
 
 # DEBUG INPUT
@@ -15,6 +16,10 @@ i==5,i==4, 1/2
 i>=2 and i<=4,i==~i+1, 1/2
 i>=2 and i<=4,i==~i-1, 0.5
 """
+# Open file
+if sys.argv[1] != "" or sys.argv[1] != None:
+    with open (sys.argv[1], "r") as myfile:
+        input=myfile.read()
 
 # Remove comments
 def remove_comments(string):
